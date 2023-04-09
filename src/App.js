@@ -150,7 +150,6 @@ const Product = styled.div`
   padding: 10px;
   cursor: pointer;  
   box-sizing: border-box;
-  border: 1px solid red;
   
   > img {
     min-height: 270px;
