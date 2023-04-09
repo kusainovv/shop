@@ -4,35 +4,41 @@ import back from './back.gif';
 import backContent from './back.jpg';
 import './App.css';
 import { Modal } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function App() {
   const [showModal, setShowModal] = useState({ is: false, id: -1, content: {} });
+  const [products, setProducts] = useState([]);
 
-  const products = [
-    {
-      title: 'Портфель мужской кожаный на два отделения Tuscany Leather TL141268',
-      price: '10 890,00 руб',
-      img: 'https://www.mirkogi.ru/upload/iblock/ffb/4bdf96e0-9c30-11e2-a380-bcaec5b392f8.resize2.jpeg'
-    },
-    {
-      title: 'Планшет мужской кожаный Brialdi BR119 TORONTO (ТОРОНТО)',
-      price: '9 950,00 руб',
-      img: 'https://www.mirkogi.ru/upload/iblock/a19/f441007b-eec4-11e2-8b8f-bcaec5b392f8.resize2.jpeg'
-    },
-    {
-      title: 'Планшет кожаный мужской LAKESTONE 943002/blc Dormer',
-      price: '13 790,00 руб',
-      img: 'https://www.mirkogi.ru/upload/iblock/ff9/14910336-bd9a-11e8-a632-001e680ebbad.resize2.jpeg'
-    },
-    {
-      title: 'Сумка женская из натуральной кожи змеи ND243',
-      price: '25 000,00 руб.',
-      img: 'https://www.mirkogi.ru/upload/iblock/df8/ad1b1673-58db-11e3-a2dd-bcaec5b392f8.resize2.jpeg'
+  const getInitialCollection = () => axios.get('http://90.156.225.217:3000').then(r => setProducts(...r.data));
+  const getFindCollection = (text) => axios.get(`http://90.156.225.217:3000/find/${text}`).then(r => setProducts(...r.data));
+
+  useEffect(() => {
+    getInitialCollection();
+  }, []);
+
+  const throttle = (fn, delay) => {
+    let lastCalled = 0;
+    return (...args) => {
+      let now = new Date().getTime();
+      if(now - lastCalled < delay) {
+        return;
+      }
+      lastCalled = now;
+      return fn(...args);
     }
-  ];
+  }
 
-  console.warn(showModal)
+  const findCollectionByText = (text) => {
+    if (text.length === 0) {
+      getInitialCollection();
+    } else {
+      getFindCollection(text);
+    }
+  }
+
+  
   return (
     <Wrapper>
       <Header>
@@ -42,7 +48,9 @@ function App() {
       <Main>
         <FindProduct>
           <h1>Найти товар</h1>
-          <input type='text' placeholder='Например: сумка' />
+          <input type='text' placeholder='Например: сумка' onChange={(e) => {
+            throttle(() => findCollectionByText(e.target.value), 100)();
+          }} />
         </FindProduct>
 
         <AllProducts>
@@ -61,7 +69,8 @@ function App() {
               </Price>
             </Product>)}
 
-            <Modal title={showModal.content?.title} open={showModal.is} onCancel={() => {
+            {
+              showModal.is && <Modal title={showModal.content?.title} open={showModal.is} onCancel={() => {
                   setShowModal({ id: showModal.id, is: false });  
                 }} onOk={() => {
                   setShowModal({ id: showModal.id, is: false });  
@@ -69,7 +78,8 @@ function App() {
                   <ModalPreview style={{
                     backgroundImage: `url(${showModal.content?.img})`
                   }} />
-                </Modal>  
+              </Modal>  
+            }   
           </Products>
         </AllProducts>
       </Main>
@@ -140,6 +150,7 @@ const Product = styled.div`
   padding: 10px;
   cursor: pointer;  
   box-sizing: border-box;
+  border: 1px solid red;
   
   > img {
     min-height: 270px;
