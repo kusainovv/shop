@@ -57,7 +57,7 @@ function App() {
           <h1>Все товары</h1>
           
           <Products>
-            {products.map((product, idx) => <Product key={idx} onClick={() => {
+            {products?.map((product, idx) => <Product key={idx} onClick={() => {
               setShowModal({ id: idx, is: true, content: product });
             }}>
               <img src={product.img} alt='' />
