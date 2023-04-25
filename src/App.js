@@ -1,11 +1,16 @@
 import styled from '@emotion/styled';
 import logo from './logo.png';
 import back from './back.gif';
-import backContent from './back.jpg';
 import './App.css';
-import { Modal } from 'antd';
+import { Card, Input, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import {Layout} from 'antd';
+import Meta from 'antd/es/card/Meta';
+
+const { Search } = Input;
+const { Footer, Content } = Layout;
+
 
 function App() {
   const [showModal, setShowModal] = useState({ is: false, id: -1, content: {} });
@@ -40,34 +45,27 @@ function App() {
 
   
   return (
-    <Wrapper>
-      <Header>
+    <Layout>
+      <HeaderWrapper>
         <img src={logo} alt='logo' />
-      </Header>
+      </HeaderWrapper>
       
-      <Main>
-        <FindProduct>
-          <h1>Найти товар</h1>
-          <input type='text' placeholder='Например: сумка' onChange={(e) => {
+      <ContentWrapper style={{
+        minHeight: 'calc(100vh - 141px)'
+      }} class={'Content'}>
+        <AllProducts>
+          <FindProduct>
+          <InputWrapper type='text' placeholder='Например: сумка' onChange={(e) => {
             throttle(() => findCollectionByText(e.target.value), 100)();
           }} />
         </FindProduct>
 
-        <AllProducts>
-          <h1>Все товары</h1>
-          
           <Products>
-            {products?.map((product, idx) => <Product key={idx} onClick={() => {
+            {products?.map((product, idx) => <CardWrapper hoverable key={idx} onClick={() => {
               setShowModal({ id: idx, is: true, content: product });
-            }}>
-              <img src={product.img} alt='' />
-              <Title>
-                {product.title}
-              </Title>
-              <Price>
-                {product.price}
-              </Price>
-            </Product>)}
+            }} cover={<img src={product.img} alt='' />}>
+              <Meta title={product.title} description={product.price} />
+            </CardWrapper>)}
 
             {
               showModal.is && <Modal title={showModal.content?.title} open={showModal.is} onCancel={() => {
@@ -75,6 +73,7 @@ function App() {
                 }} onOk={() => {
                   setShowModal({ id: showModal.id, is: false });  
                 }}>
+                  <Meta title={showModal.content?.price} />
                   <ModalPreview style={{
                     backgroundImage: `url(${showModal.content?.img})`
                   }} />
@@ -82,32 +81,22 @@ function App() {
             }   
           </Products>
         </AllProducts>
-      </Main>
-    </Wrapper>
+      </ContentWrapper>
+      
+      <FooterWrapper>@2023</FooterWrapper>
+    </Layout>
   );
 }
 
-const Wrapper = styled.div`
-  min-height: 100vh;
-`;
-
-const Header = styled.header`
-  padding: 20px;
+const HeaderWrapper = styled.header`
+  padding: 10px;
   background: #43110a url(${back});
   display: flex;
   justify-content: center;
 `;
 
-
-const Main = styled.main`
-  min-height: calc(100vh - 119px);
-  background: #43110a url(${backContent});
-`;
-
-
 const FindProduct = styled.div`
-  padding: 30px;
-  color: white;
+  padding-bottom: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,7 +121,6 @@ const FindProduct = styled.div`
 
 const AllProducts = styled.div`
   padding: 30px;
-  color: white;
   margin-top: 50px;
 
   > h1 {
@@ -142,7 +130,7 @@ const AllProducts = styled.div`
 `;
 
 
-const Product = styled.div`
+const CardWrapper = styled(Card)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -150,12 +138,17 @@ const Product = styled.div`
   padding: 10px;
   cursor: pointer;  
   box-sizing: border-box;
-  
+  background-color: white;
+  color: black;
+  border-radius: 12px;
+  word-break: break-word;
+
   > img {
+    width: 270px;
     min-height: 270px;
     @media (max-width: 700px) {
-    width: 100%;
-  }
+      width: 100%;
+    }
   }
 
   @media (max-width: 700px) {
@@ -166,24 +159,20 @@ const Product = styled.div`
 
 const Products = styled.div`
   display: grid;
-  grid-template-columns: 320px 320px;
+  grid-template-columns: calc(320px - 20px) calc(50% - 20px);
   justify-content: center;
+  gap: 20px;
 
   @media (max-width: 700px) {
     grid-template-columns: 320px;
   }
 `;
 
-
-
-const Title = styled.p``;
-
-
-const Price = styled.p`
-  margin-right: auto;
-  margin-top: 0;
+const ContentWrapper = styled(Content)`
+  display: flex;
+  justify-content: center;
+  margin: auto;
 `;
-
 
 const ModalPreview = styled.div`
   width: 100%;
@@ -191,5 +180,21 @@ const ModalPreview = styled.div`
   background-position: center;
   background-repeat: no-repeat;
 `;
+
+
+const FooterWrapper = styled(Footer)`
+  margin-top: 20px;
+  text-align: center;
+  padding: 10px;
+  background: #43110a url(${back});
+  display: flex;
+  justify-content: center;
+  color: white;
+`;
+
+const InputWrapper = styled(Search)`
+  margin-right: auto;
+`;
+
 
 export default App;
